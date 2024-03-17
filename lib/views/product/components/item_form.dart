@@ -53,8 +53,7 @@ class _ItemFormState extends State<ItemForm> {
           price: double.parse(_priceController.text),
           stock: int.parse(_stockQuantityController.text),
           unit: _selectedUnit!,
-          itemId: widget.item?.id,
-          categoryId: _categoryId!);
+          itemId: widget.item?.id,);
 
       if (result == true) {
         AppUtil.showToast('Item changed successfully');
@@ -84,10 +83,9 @@ class _ItemFormState extends State<ItemForm> {
       _itemDescriptionController.text = widget.item!.description;
       _priceController.text = widget.item!.price.toString();
       _stockQuantityController.text = widget.item!.stock.toString();
-      _categoryId = widget.item!.categoryId;
       _selectedUnit = widget.item!.unit;
     }
-    _loadCategories();
+    //_loadCategories();
   }
 
   @override
@@ -192,7 +190,7 @@ class _ItemFormState extends State<ItemForm> {
                     )
                   ],
                 ),
-                SizedBox(height: 20),
+               /* SizedBox(height: 20),
                 DropdownButtonFormField<String>(
                   value: _categoryId,
                   decoration: InputDecoration(labelText: 'Select Category'),
@@ -214,7 +212,7 @@ class _ItemFormState extends State<ItemForm> {
                     }
                     return null;
                   },
-                ),
+                ),*/
                 SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _selectedUnit,
@@ -260,6 +258,7 @@ class _ItemFormState extends State<ItemForm> {
     List<Category> categories = await FirebaseService().loadCategories();
     setState(() {
       _categories = categories;
+      _categoryId = _categories[0].id;
     });
   }
 }

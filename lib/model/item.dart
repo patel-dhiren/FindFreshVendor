@@ -5,10 +5,12 @@ class Item {
   double price;
   int stock;
   String unit;
-  String categoryId;
   String imageUrl;
   int createdAt;
-  bool inTop = false;
+  String vendorId;
+  String vendorName;
+  String city;
+  String vendorBusinessName;
 
   Item(
       {this.id,
@@ -17,10 +19,12 @@ class Item {
       required this.price,
       required this.stock,
       required this.unit,
-      required this.categoryId,
       required this.imageUrl,
-      required this.createdAt,
-      this.inTop = false});
+      required this.vendorId,
+      required this.vendorName,
+      required this.vendorBusinessName,
+      required this.city,
+      required this.createdAt});
 
   Map<String, dynamic> toJson() {
     return {
@@ -30,10 +34,12 @@ class Item {
       "price": this.price,
       "stock": this.stock,
       "unit": this.unit,
-      "categoryId": this.categoryId,
       "imageUrl": this.imageUrl,
+      "vendorId": this.vendorId,
+      "vendorName": this.vendorName,
+      "vendorBusinessName": this.vendorBusinessName,
+      "city": this.city,
       "createdAt": this.createdAt,
-      "inTop": this.inTop,
     };
   }
 
@@ -45,10 +51,12 @@ class Item {
       price: double.parse(json["price"].toString()),
       stock: json["stock"],
       unit: json["unit"],
-      categoryId: json["categoryId"],
       imageUrl: json["imageUrl"],
+      vendorId: json["vendorId"],
+      vendorName: json["vendorName"],
+      vendorBusinessName: json["vendorBusinessName"],
+      city: json["city"],
       createdAt: json["createdAt"],
-      inTop: json["inTop"],
     );
   }
 //

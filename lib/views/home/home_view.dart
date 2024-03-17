@@ -18,7 +18,6 @@ class _HomeViewState extends State<HomeView> {
   final List<Widget> _widgetOptions = [
     Text('Products'),
     Text('Orders'),
-    Text('Earnings'),
     Text('Profile'),
     Text('Logout'),
   ];
@@ -26,7 +25,6 @@ class _HomeViewState extends State<HomeView> {
   final List<Widget> _widgetPages = [
     ItemListView(),
     OrderView(),
-    EarningView(),
     ProfileView()
   ];
 
@@ -65,11 +63,11 @@ class _HomeViewState extends State<HomeView> {
             label: 'Orders',
             selectedIcon: Icon(Icons.receipt_long),
           ),
-          NavigationDestination(
+        /*  NavigationDestination(
             icon: Icon(Icons.attach_money_outlined),
             label: 'Earning',
             selectedIcon: Icon(Icons.attach_money),
-          ),
+          ),*/
           NavigationDestination(
             icon: Icon(Icons.person_outline),
             label: 'Profile',

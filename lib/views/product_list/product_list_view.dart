@@ -101,7 +101,7 @@ class _ItemListViewState extends State<ItemListView> {
                                     ],
                                   ),
                                 ),
-                                Text(item.description),
+                                Text(item.description, maxLines: 2, overflow: TextOverflow.ellipsis,),
                                 Text('Price : ${item.price} /${item.unit}'),
                                 Text('Stock : ${item.stock} ${item.unit}'),
                               ],

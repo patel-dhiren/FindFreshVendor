@@ -8,6 +8,8 @@ class AppUser {
   String address;
   String state;
   String city;
+  String? categoryId;
+  String? profileImage;
   int createdAt = DateTime.now().millisecondsSinceEpoch;
 
   AppUser(
@@ -19,7 +21,9 @@ class AppUser {
       required this.contactNumber,
       required this.address,
       required this.state,
-      required this.city});
+      required this.city,
+      this.categoryId,
+        this.profileImage});
 
   factory AppUser.fromJson(Map<dynamic, dynamic> json) {
     return AppUser(
@@ -32,6 +36,8 @@ class AppUser {
       address: json["address"],
       state: json["state"],
       city: json["city"],
+      profileImage: json["profileImage"],
+      categoryId: json["categoryId"],
     );
   }
 
@@ -46,6 +52,8 @@ class AppUser {
       "address": this.address,
       "state": this.state,
       "city": this.city,
+      "profileImage": this.profileImage,
+      "categoryId": this.categoryId,
       "createdAt": this.createdAt,
     };
   }

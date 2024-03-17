@@ -1,10 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fresh_find_vendor/constants/constants.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../firebase/firebase_service.dart';
-import '../../../gen/assets.gen.dart';
 import '../../../model/app_user.dart';
+import '../../../model/category.dart';
+import '../../../utils/app_util.dart';
 
 class SignupForm extends StatefulWidget {
   const SignupForm({super.key});
@@ -102,6 +105,9 @@ class _SignupFormState extends State<SignupForm> {
   };
 
   List<String> _cities = ['Select City'];
+  XFile? _newImage;
+  List<Category> _categories = [];
+  String? _categoryId;
 
   void _toggleVisibility() {
     setState(() {
@@ -159,16 +165,48 @@ class _SignupFormState extends State<SignupForm> {
         address: _address,
         state: _selectedState,
         city: _selectedCity,
+        categoryId: _categoryId!
       );
 
-      try {
-        await FirebaseService().createUserWithEmailAndPassword(appUser);
+      String? errorMessage = await FirebaseService()
+          .createUserWithEmailAndPassword(appUser, _newImage);
+
+      if (errorMessage != null) {
+        // Show error message
         setState(() => _isLoading = false);
-        Navigator.pushNamedAndRemoveUntil(context, AppConstant.homeView, (route) => false);
-      } on FirebaseAuthException catch (e) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(errorMessage)));
+      } else {
         setState(() => _isLoading = false);
+        // Navigate to home or any other page
+        Navigator.pushNamedAndRemoveUntil(
+            context, AppConstant.homeView, (route) => false);
       }
     }
+  }
+
+  Future<void> pickImage() async {
+    var image = await AppUtil.pickImageFromGallery();
+
+    if (image != null) {
+      setState(() {
+        _newImage = image;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    List<Category> categories = await FirebaseService().loadCategories();
+    setState(() {
+      _categories = categories;
+    });
   }
 
   @override
@@ -179,11 +217,31 @@ class _SignupFormState extends State<SignupForm> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            height: MediaQuery.of(context).size.height * 0.25,
-            alignment: Alignment.center,
-            child: Image.asset(Assets.images.logo.path),
+          GestureDetector(
+            onTap: () {
+              pickImage();
+            },
+            child: CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.white.withOpacity(.7),
+                child: _newImage != null
+                    ? CircleAvatar(
+                        radius: 60,
+                        foregroundImage: FileImage(
+                          File(_newImage!.path),
+                        ),
+                      )
+                    : CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.orange.shade100,
+                        child: Icon(
+                          Icons.add,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
+                      )),
           ),
+          SizedBox(height: 24),
           TextFormField(
             decoration: InputDecoration(labelText: 'Vendor Name'),
             validator: (value) => _validateRequiredField(value, 'Vendor Name'),
@@ -207,6 +265,28 @@ class _SignupFormState extends State<SignupForm> {
             validator: (value) =>
                 _validateRequiredField(value, 'Contact Number'),
             onSaved: (value) => _contactNumber = value ?? '',
+          ),
+          DropdownButtonFormField<String>(
+            value: _categoryId,
+            decoration: InputDecoration(labelText: 'Select Category'),
+            items: _categories
+                .map<DropdownMenuItem<String>>((Category category) {
+              return DropdownMenuItem<String>(
+                value: category.id,
+                child: Text(category.name),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _categoryId = newValue;
+              });
+            },
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please select a category';
+              }
+              return null;
+            },
           ),
           DropdownButtonFormField(
             value: _selectedState,
@@ -248,8 +328,8 @@ class _SignupFormState extends State<SignupForm> {
           SizedBox(height: 24),
           _isLoading
               ? CircularProgressIndicator(
-            color: Colors.orange,
-          )
+                  color: Colors.orange,
+                )
               : Container(
                   width: double.infinity,
                   child: ElevatedButton(

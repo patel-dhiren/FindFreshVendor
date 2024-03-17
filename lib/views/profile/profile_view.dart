@@ -1,8 +1,10 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fresh_find_vendor/utils/app_util.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../../constants/constants.dart';
 import '../../firebase/firebase_service.dart';
 import '../../model/app_user.dart';
 
@@ -110,6 +112,8 @@ class _ProfileViewState extends State<ProfileView> {
   };
 
   List<String> _cities = ['Select City'];
+  XFile? _newImage;
+  String? existingImageUrl;
 
   void _updateCities(String state) {
     setState(() {
@@ -143,6 +147,8 @@ class _ProfileViewState extends State<ProfileView> {
       setState(() => _isLoading = true);
 
       final appUser = AppUser(
+        id: user.id,
+        categoryId: user.categoryId,
         email: _email,
         password: user.password,
         vendorName: _vendorName,
@@ -155,7 +161,8 @@ class _ProfileViewState extends State<ProfileView> {
       appUser.createdAt = user.createdAt;
 
       try {
-        await FirebaseService().updateVendorProfile(appUser);
+        await FirebaseService()
+            .updateVendorProfile(appUser, _newImage, existingImageUrl);
         setState(() => _isLoading = false);
         AppUtil.showToast("Profile updated successfully");
       } on FirebaseAuthException catch (e) {
@@ -181,20 +188,33 @@ class _ProfileViewState extends State<ProfileView> {
   Future<void> _loadVendorProfile() async {
     try {
       user = await FirebaseService().fetchVendorById();
-      setState(() {
-        _emailController.text = user.email;
-        _vendorController.text = user.vendorName;
-        _businessController.text = user.businessName;
-        _contactController.text = user.contactNumber;
-        _addressController.text = user.address;
-        _selectedState = user.state;
-        _selectedCity = user.city;
-        _cities = stateCityMap[_selectedState]!;
-        _selectedCity = user.city;
-      });
+      setState(
+        () {
+          _emailController.text = user.email;
+          _vendorController.text = user.vendorName;
+          _businessController.text = user.businessName;
+          _contactController.text = user.contactNumber;
+          _addressController.text = user.address;
+          _selectedState = user.state;
+          _selectedCity = user.city;
+          _cities = stateCityMap[_selectedState]!;
+          _selectedCity = user.city;
+          existingImageUrl = user.profileImage;
+        },
+      );
     } catch (e) {
       print("Error fetching profile: $e");
       // Handle error, possibly by showing an error message
+    }
+  }
+
+  Future<void> pickImage() async {
+    var image = await AppUtil.pickImageFromGallery();
+
+    if (image != null) {
+      setState(() {
+        _newImage = image;
+      });
     }
   }
 
@@ -217,6 +237,34 @@ class _ProfileViewState extends State<ProfileView> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      GestureDetector(
+                        onTap: () {
+                          pickImage();
+                        },
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundColor: Colors.white.withOpacity(.7),
+                          child: _newImage == null && existingImageUrl != null
+                              ? CircleAvatar(
+                                  radius: 60,
+                                  foregroundImage:
+                                      NetworkImage(existingImageUrl!),
+                                )
+                              : _newImage != null
+                                  ? CircleAvatar(
+                                      radius: 60,
+                                      foregroundImage: FileImage(
+                                        File(_newImage!.path),
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.add,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
                       TextFormField(
                         controller: _vendorController,
                         decoration: InputDecoration(labelText: 'Vendor Name'),
