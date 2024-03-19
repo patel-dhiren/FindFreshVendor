@@ -11,19 +11,22 @@ class AppUser {
   String? categoryId;
   String? profileImage;
   int createdAt = DateTime.now().millisecondsSinceEpoch;
+  bool isActive;
 
-  AppUser(
-      {this.id,
-      required this.email,
-      required this.password,
-      required this.vendorName,
-      required this.businessName,
-      required this.contactNumber,
-      required this.address,
-      required this.state,
-      required this.city,
-      this.categoryId,
-        this.profileImage});
+  AppUser({
+    this.id,
+    required this.email,
+    required this.password,
+    required this.vendorName,
+    required this.businessName,
+    required this.contactNumber,
+    required this.address,
+    required this.state,
+    required this.city,
+    this.categoryId,
+    this.profileImage,
+    this.isActive = true,
+  });
 
   factory AppUser.fromJson(Map<dynamic, dynamic> json) {
     return AppUser(
@@ -38,6 +41,7 @@ class AppUser {
       city: json["city"],
       profileImage: json["profileImage"],
       categoryId: json["categoryId"],
+      isActive: json["isActive"],
     );
   }
 
@@ -55,6 +59,7 @@ class AppUser {
       "profileImage": this.profileImage,
       "categoryId": this.categoryId,
       "createdAt": this.createdAt,
+      "isActive": this.isActive,
     };
   }
 }

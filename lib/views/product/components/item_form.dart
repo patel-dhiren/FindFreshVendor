@@ -43,7 +43,10 @@ class _ItemFormState extends State<ItemForm> {
         (existingImageUrl != null || _newImage != null)) {
       _formKey.currentState!.save();
 
-      bool? result = await FirebaseService().addOrUpdateItem(
+      var user = await FirebaseService().fetchVendorById();
+
+      if (user != null && user.isActive) {
+        bool? result = await FirebaseService().addOrUpdateItem(
           name: _itemNameController.text,
           description: _itemDescriptionController.text,
           newImage: _newImage,
@@ -53,15 +56,47 @@ class _ItemFormState extends State<ItemForm> {
           price: double.parse(_priceController.text),
           stock: int.parse(_stockQuantityController.text),
           unit: _selectedUnit!,
-          itemId: widget.item?.id,);
+          itemId: widget.item?.id,
+        );
 
-      if (result == true) {
-        AppUtil.showToast('Item changed successfully');
-        Navigator.pop(context);
+        if (result == true) {
+          AppUtil.showToast('Item changed successfully');
+          Navigator.pop(context);
+        } else {
+          AppUtil.showToast('Error occurred while managing item.');
+        }
       } else {
-        AppUtil.showToast('Error occurred while managing item.');
+        showRestrictedDialog(context);
       }
     }
+  }
+
+  showRestrictedDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Access Restricted'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('As per the admin\'s restrictions, you are currently not allowed to add new products.'),
+                Text('Please try again later.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.pop(context); // Attempts to close the application
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> pickImage() async {
@@ -190,7 +225,7 @@ class _ItemFormState extends State<ItemForm> {
                     )
                   ],
                 ),
-               /* SizedBox(height: 20),
+                /* SizedBox(height: 20),
                 DropdownButtonFormField<String>(
                   value: _categoryId,
                   decoration: InputDecoration(labelText: 'Select Category'),
