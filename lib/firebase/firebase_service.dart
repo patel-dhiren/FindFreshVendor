@@ -266,6 +266,32 @@ class FirebaseService {
     });
   }
 
+
+
+  Future<double> getEarnings( DateTime start, DateTime end) async {
+    double totalEarnings = 0.0;
+
+    var vendorId = _firebaseAuth.currentUser!.uid;
+
+    // Query to get orders for the given vendorId within the specified timeframe
+    final query = _database.ref().child('vendorOrders/$vendorId').orderByChild('orderDate')
+        .startAt(start.millisecondsSinceEpoch.toDouble())
+        .endAt(end.millisecondsSinceEpoch.toDouble());
+
+    // Execute the query and calculate total earnings
+    final snapshot = await query.get();
+    if (snapshot.exists) {
+      snapshot.children.forEach((orderSnapshot) {
+        final orderData = orderSnapshot.value as Map<dynamic, dynamic>;
+        final items = List.from(orderData['items']);
+        for (var item in items) {
+          totalEarnings += item['totalPrice'];
+        }
+      });
+    }
+    return totalEarnings;
+  }
+
   Future<void> logout() async {
     await _firebaseAuth.signOut();
   }
